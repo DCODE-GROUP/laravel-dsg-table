@@ -1,0 +1,58 @@
+{
+    "name": "dcodegroup/laravel-dsg-table",
+    "description": "Convention-based data tables for DSG Table with a single API endpoint",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "dsg",
+        "table",
+        "dcode"
+    ],
+    "authors": [
+        {
+            "name": "Dcode Group",
+            "email": "yohann@dcodegroup.com",
+            "homepage": "https://dcodegroup.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2 || ^8.3 || ^8.4",
+        "illuminate/contracts": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/support": "^10.0 || ^11.0 || ^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.21",
+        "orchestra/testbench": "^9.0|^10.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Dcodegroup\\LaravelDsgTable\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dcodegroup\\LaravelDsgTable\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Dcodegroup\\LaravelDsgTable\\DsgTableServiceProvider"
+            ],
+            "aliases": {
+                "DsgTable": "Dcodegroup\\LaravelDsgTable\\Facades\\DsgTable"
+            }
+        }
+    }
+}
