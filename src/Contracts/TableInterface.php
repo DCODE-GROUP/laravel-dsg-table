@@ -3,6 +3,7 @@
 namespace Dcodegroup\LaravelDsgTable\Contracts;
 
 use Illuminate\Auth\Access\Response;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Collection;
 
@@ -22,4 +23,11 @@ interface TableInterface
      * Return the column definitions for the table header.
      */
     public function fields(): Collection;
+
+    /**
+     * Return DSG-compatible filter definitions for the frontend.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function filters(Request $request, mixed $param = null): array;
 }

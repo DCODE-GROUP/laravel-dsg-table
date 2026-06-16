@@ -5,8 +5,10 @@ Convention-based data tables for Laravel, designed to work with [`dsg-vue tables
 Instead of creating a dedicated API controller for every table, this package gives you:
 
 - **One endpoint** that resolves table classes by name
-- **Table classes** that define authorisation, query logic, and column definitions
+- **Table classes** that define authorisation, query logic, column definitions, and filters
 - **Column builders** that output the field arrays expected by `DsgTable`
+- **Reusable filter facets** (`BooleanFacet`, `DateRangeFacet`, `SelectFacet`, `RefineFacet`)
+- **Fluent `FilterBuilder`** for composing filter definitions
 - **`make:table`** to scaffold new tables quickly
 
 ## Requirements
@@ -41,13 +43,14 @@ Route::dsgTable(
 );
 ```
 
-This registers a single GET endpoint:
+This registers two GET endpoints:
 
 ```
 GET /dsg-table/{tableName}/{param?}
+GET /dsg-table/{tableName}/filters/{param?}
 ```
 
-For example, `GET /dsg-table/users` resolves to `App\Tables\UsersTable`.
+For example, `GET /dsg-table/users` resolves to `App\Tables\UsersTable`, and `GET /dsg-table/users/filters` returns that table's filter definitions.
 
 Alternatively, set `route.auto_register` to `true` in config and the package will register the route for you using the values in `config/dsg-table.php`.
 
@@ -69,7 +72,12 @@ use Dcodegroup\LaravelDsgTable\Columns\ActionsColumn;
 use Dcodegroup\LaravelDsgTable\Columns\Column;
 use Dcodegroup\LaravelDsgTable\Columns\SlotColumn;
 use Dcodegroup\LaravelDsgTable\Contracts\TableInterface;
+use Dcodegroup\LaravelDsgTable\Facets\DateRangeFacet;
+use Dcodegroup\LaravelDsgTable\Facets\Facet;
+use Dcodegroup\LaravelDsgTable\Filters\FilterBuilder;
+use Dcodegroup\LaravelDsgTable\Support\ActiveFilter;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
@@ -106,6 +114,18 @@ class UsersTable implements TableInterface
             ActionsColumn::make()->toArray(),
         ]);
     }
+
+    public function filters(Request $request, mixed $param = null): array
+    {
+        return array_merge(
+            FilterBuilder::make()
+                ->refineItems('active', __('generic.words.status'), ActiveFilter::items(), valueField: 'value', apiMode: false)
+                ->toArray(),
+            Facet::collection([
+                DateRangeFacet::make(__('generic.filters.creation_date'), 'created_at'),
+            ]),
+        );
+    }
 }
 ```
 
@@ -141,6 +161,7 @@ import { DsgTable, DsgTablePerPage } from '@dsg/table';
   <DsgTable
     ref="dsgTableRef"
     :get-url="route('api.dsg-table', { tableName: 'users' })"
+    :filter-endpoint="route('api.dsg-table.filters', { tableName: 'users' })"
     :fields="fields"
     @dsg-table:action-edit="(event, data) => editUser(data)"
     @dsg-table:action-delete="(event, data) => deleteUser(data)"
@@ -174,6 +195,7 @@ use Dcodegroup\LaravelDsgTable\Facades\DsgTable;
 
 $table = DsgTable::get('users');
 $fields = DsgTable::fields('users');
+$filters = DsgTable::filters('users');
 $data = $table->resourceCollection();
 ```
 
@@ -183,16 +205,25 @@ Every table class must implement `TableInterface`:
 
 | Method | Purpose |
 |---|---|
-| `authorisation($arguments)` | Authorise the current user before returning data. Receives the optional `{param}` route segment. |
+| `authorisation($arguments)` | Authorise the current user before returning data or filters. Receives the optional `{param}` route segment. |
 | `resourceCollection($param)` | Build and return the paginated `AnonymousResourceCollection` for the table rows. |
 | `fields()` | Return a `Collection` of column definition arrays for the table header. |
+| `filters($request, $param)` | Return DSG-compatible filter definitions for the frontend. |
 
-When a request hits the endpoint, the controller runs:
+When a request hits the data endpoint, the controller runs:
 
 ```php
 $table = DsgTable::get($tableName);
 $table->authorisation($param);
 return $table->resourceCollection($param);
+```
+
+When a request hits the filters endpoint:
+
+```php
+$table = DsgTable::get($tableName);
+$table->authorisation($param);
+return $table->filters($request, $param);
 ```
 
 ## Configuration
@@ -236,6 +267,63 @@ When calling `Route::dsgTable()`, any argument you omit falls back to these conf
 ```
 
 Set any value to `null` to omit `dataClass` from the column output.
+
+### Filter labels
+
+```php
+'boolean_facet' => [
+    'true_label' => 'dsg-table::filters.yes',
+    'false_label' => 'dsg-table::filters.no',
+],
+'active_filter' => [
+    'active_label' => 'dsg-table::filters.active',
+    'inactive_label' => 'dsg-table::filters.inactive',
+],
+```
+
+Override in your app config to use existing translation keys, e.g. `generic.words.active`.
+
+Publish translations:
+
+```bash
+php artisan vendor:publish --tag=dsg-table-translations
+```
+
+## Filters
+
+Each table class defines its own filters via `filters()`. Returns a **JSON array** compatible with DSG Table (`refines`, `date_range`, `refines_single`, etc.).
+
+### Fluent FilterBuilder
+
+```php
+FilterBuilder::make()
+    ->refineItems('active', __('generic.words.status'), ActiveFilter::items(), valueField: 'value', apiMode: false)
+    ->dateRange('created_at', 'Created')
+    ->singleSelect('role', 'Role', $roles, searchField: 'label', valueField: 'value')
+    ->toArray();
+```
+
+### Facets
+
+| Facet | DSG type |
+|---|---|
+| `BooleanFacet` | `refines` (translated Yes/No by default) |
+| `SelectFacet` | `refines` |
+| `RefineFacet` | `refines` (from collection or Eloquent builder) |
+| `DateRangeFacet` | `date_range` |
+
+```php
+Facet::build(BooleanFacet::make('Status', 'active'));
+Facet::collection([DateRangeFacet::make('Created', 'created_at')]);
+```
+
+### Active / inactive status items
+
+```php
+use Dcodegroup\LaravelDsgTable\Support\ActiveFilter;
+
+ActiveFilter::items(); // Collection of [['name' => 'Active', 'value' => 1], ...]
+```
 
 ## Columns
 
@@ -307,7 +395,13 @@ When `route.param` is enabled (the default), the endpoint accepts an optional th
 GET /dsg-table/account-users/42
 ```
 
-This resolves to `AccountUsersTable` and passes `42` as `$param` to both `authorisation()` and `resourceCollection()`. Useful for scoped tables such as users belonging to a specific account.
+This resolves to `AccountUsersTable` and passes `42` as `$param` to `authorisation()`, `resourceCollection()`, and `filters()`. Useful for scoped tables such as users belonging to a specific account.
+
+Filters for a scoped table use the same optional parameter:
+
+```
+GET /dsg-table/account-users/42/filters
+```
 
 Disable it when registering the route:
 

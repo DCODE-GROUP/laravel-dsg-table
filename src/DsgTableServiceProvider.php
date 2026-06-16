@@ -4,6 +4,7 @@ namespace Dcodegroup\LaravelDsgTable;
 
 use Dcodegroup\LaravelDsgTable\Console\Commands\MakeTableCommand;
 use Dcodegroup\LaravelDsgTable\Http\Controllers\TableController;
+use Dcodegroup\LaravelDsgTable\Http\Controllers\TableFiltersController;
 use Dcodegroup\LaravelDsgTable\Support\AbstractTableFactory;
 use Dcodegroup\LaravelDsgTable\Support\TableFactory;
 use Illuminate\Support\Facades\Route;
@@ -21,8 +22,20 @@ class DsgTableServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configurePublishing();
+        $this->configureTranslations();
         $this->configureCommands();
         $this->configureRouting();
+    }
+
+    protected function configureTranslations(): void
+    {
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'dsg-table');
+
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../lang' => $this->app->langPath('vendor/dsg-table'),
+            ], 'dsg-table-translations');
+        }
     }
 
     protected function configurePublishing(): void
@@ -62,6 +75,14 @@ class DsgTableServiceProvider extends ServiceProvider
             $uri = $withParam
                 ? "{$prefix}/{tableName}/{param?}"
                 : "{$prefix}/{tableName}";
+
+            $filtersUri = $withParam
+                ? "{$prefix}/{tableName}/filters/{param?}"
+                : "{$prefix}/{tableName}/filters";
+
+            Route::get($filtersUri, TableFiltersController::class)
+                ->middleware($middleware)
+                ->name("{$name}.filters");
 
             Route::get($uri, TableController::class)
                 ->middleware($middleware)

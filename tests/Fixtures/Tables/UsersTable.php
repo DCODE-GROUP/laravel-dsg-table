@@ -4,7 +4,12 @@ namespace Dcodegroup\LaravelDsgTable\Tests\Fixtures\Tables;
 
 use Dcodegroup\LaravelDsgTable\Columns\Column;
 use Dcodegroup\LaravelDsgTable\Contracts\TableInterface;
+use Dcodegroup\LaravelDsgTable\Facets\BooleanFacet;
+use Dcodegroup\LaravelDsgTable\Facets\DateRangeFacet;
+use Dcodegroup\LaravelDsgTable\Facets\Facet;
+use Dcodegroup\LaravelDsgTable\Filters\FilterBuilder;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
@@ -38,5 +43,21 @@ class UsersTable implements TableInterface
             Column::make('name', 'Name')->toArray(),
             Column::make('email', 'Email')->isSortable()->toArray(),
         ]);
+    }
+
+    public function filters(Request $request, mixed $param = null): array
+    {
+        return array_merge(
+            FilterBuilder::make()
+                ->refineItems('active', 'Status', [
+                    ['name' => 'Active', 'value' => 1],
+                    ['name' => 'Inactive', 'value' => 0],
+                ], valueField: 'value', apiMode: false)
+                ->toArray(),
+            Facet::collection([
+                DateRangeFacet::make('Created', 'created_at'),
+                BooleanFacet::make('Published', 'published'),
+            ]),
+        );
     }
 }

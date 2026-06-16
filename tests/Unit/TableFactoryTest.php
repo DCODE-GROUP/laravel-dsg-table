@@ -87,5 +87,6 @@ class TableFactoryTest extends TestCase
     {
         $this->assertInstanceOf(UsersTable::class, DsgTable::get('users'));
         $this->assertCount(2, DsgTable::fields('users'));
+        $this->assertCount(3, DsgTable::filters('users'));
     }
 }

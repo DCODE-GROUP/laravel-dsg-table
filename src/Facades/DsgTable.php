@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static \Dcodegroup\LaravelDsgTable\Contracts\TableInterface get(string $tableName)
  * @method static array<int, array<string, mixed>> fields(string $tableName)
+ * @method static array<int, array<string, mixed>> filters(string $tableName, ?\Illuminate\Http\Request $request = null, mixed $param = null)
  *
  * @see AbstractTableFactory
  */

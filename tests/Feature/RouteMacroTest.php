@@ -3,6 +3,7 @@
 namespace Dcodegroup\LaravelDsgTable\Tests\Feature;
 
 use Dcodegroup\LaravelDsgTable\Http\Controllers\TableController;
+use Dcodegroup\LaravelDsgTable\Http\Controllers\TableFiltersController;
 use Dcodegroup\LaravelDsgTable\Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,17 @@ class RouteMacroTest extends TestCase
         $this->assertStringContainsString(
             TableController::class,
             (string) $route->getAction('uses'),
+        );
+
+        $filtersRoute = collect(Route::getRoutes())->first(
+            fn ($route) => $route->getName() === 'configured.route.filters'
+        );
+
+        $this->assertNotNull($filtersRoute);
+        $this->assertSame('configured-prefix/{tableName}/filters/{param?}', $filtersRoute->uri());
+        $this->assertStringContainsString(
+            TableFiltersController::class,
+            (string) $filtersRoute->getAction('uses'),
         );
     }
 }

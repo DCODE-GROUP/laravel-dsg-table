@@ -5,6 +5,7 @@ namespace Dcodegroup\LaravelDsgTable\Support;
 use Dcodegroup\LaravelDsgTable\Contracts\TableInterface;
 use Dcodegroup\LaravelDsgTable\Exceptions\TableException;
 use Dcodegroup\LaravelDsgTable\Exceptions\TableNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 abstract class AbstractTableFactory
@@ -32,6 +33,16 @@ abstract class AbstractTableFactory
     public function fields(string $tableName): array
     {
         return $this->get($tableName)->fields()->values()->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function filters(string $tableName, ?Request $request = null, mixed $param = null): array
+    {
+        $request ??= request();
+
+        return $this->get($tableName)->filters($request, $param);
     }
 
     protected function resolveClassName(string $tableName): string

@@ -60,6 +60,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Boolean Facet Labels
+    |--------------------------------------------------------------------------
+    |
+    | Translation keys used for the default true/false labels on BooleanFacet.
+    |
+    */
+
+    'boolean_facet' => [
+        'true_label' => 'dsg-table::filters.yes',
+        'false_label' => 'dsg-table::filters.no',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Active Filter Labels
+    |--------------------------------------------------------------------------
+    |
+    | Translation keys used by ActiveFilter::items().
+    |
+    */
+
+    'active_filter' => [
+        'active_label' => 'dsg-table::filters.active',
+        'inactive_label' => 'dsg-table::filters.inactive',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Route
     |--------------------------------------------------------------------------
     |

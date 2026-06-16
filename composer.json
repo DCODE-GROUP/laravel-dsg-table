@@ -1,12 +1,14 @@
 {
     "name": "dcodegroup/laravel-dsg-table",
-    "description": "Convention-based data tables for DSG Table with a single API endpoint",
+    "description": "Convention-based data tables and filters for DSG Table with a single API endpoint",
     "license": "MIT",
     "type": "library",
     "keywords": [
         "laravel",
         "dsg",
         "table",
+        "filters",
+        "facets",
         "dcode"
     ],
     "authors": [
