@@ -361,23 +361,6 @@ $this->app->singleton(AbstractTableFactory::class, function () {
 
 The `DsgTable` facade and `TableController` will use your binding automatically.
 
-## Filters
-
-Filter endpoints are not part of this package — they remain app-specific. A typical setup keeps a separate filter route per resource:
-
-```php
-// routes/api/admin.php
-Route::get('users/filters', UserFilterController::class)->name('users.filters');
-```
-
-```vue
-<DsgTable
-  :get-url="route('api.dsg-table', { tableName: 'users' })"
-  :filter-endpoint="route('api.admin.users.filters')"
-  :fields="fields"
-/>
-```
-
 ## License
 
 MIT. See [LICENSE](LICENSE) for details.
