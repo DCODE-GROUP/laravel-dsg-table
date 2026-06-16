@@ -1,6 +1,6 @@
 # Laravel DSG Table
 
-Convention-based data tables for Laravel, designed to work with [`@dsg/table`](https://www.npmjs.com/package/@dsg/table).
+Convention-based data tables for Laravel, designed to work with [`dsg-vue tables`](https://github.com/DCODE-GROUP/dsg-vue).
 
 Instead of creating a dedicated API controller for every table, this package gives you:
 
