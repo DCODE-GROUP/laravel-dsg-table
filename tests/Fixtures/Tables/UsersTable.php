@@ -2,6 +2,7 @@
 
 namespace Dcodegroup\LaravelDsgTable\Tests\Fixtures\Tables;
 
+use Dcodegroup\LaravelDsgTable\Actions\CrudActions;
 use Dcodegroup\LaravelDsgTable\Columns\Column;
 use Dcodegroup\LaravelDsgTable\Contracts\TableInterface;
 use Dcodegroup\LaravelDsgTable\Facets\BooleanFacet;
@@ -59,5 +60,14 @@ class UsersTable implements TableInterface
                 BooleanFacet::make('Published', 'published'),
             ]),
         );
+    }
+
+    public function actionsFor(mixed $model, mixed $param = null): array
+    {
+        return CrudActions::for($model, 'admin.users', $param)
+            ->withView()
+            ->withEdit()
+            ->withDelete('Are you sure you want to delete this user?')
+            ->toArray();
     }
 }

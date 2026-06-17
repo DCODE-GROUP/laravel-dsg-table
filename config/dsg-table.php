@@ -88,6 +88,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Row Action Labels
+    |--------------------------------------------------------------------------
+    |
+    | Default translation keys and delete component used by RowActions and
+    | CrudActions. Override in your app config to use existing keys.
+    |
+    */
+
+    'actions' => [
+        'labels' => [
+            'view' => 'dsg-table::actions.view',
+            'edit' => 'dsg-table::actions.edit',
+            'delete' => 'dsg-table::actions.delete',
+        ],
+        'delete' => [
+            'component' => 'DeleteConfirmationButton',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Route
     |--------------------------------------------------------------------------
     |

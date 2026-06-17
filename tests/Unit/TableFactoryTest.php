@@ -8,6 +8,7 @@ use Dcodegroup\LaravelDsgTable\Facades\DsgTable;
 use Dcodegroup\LaravelDsgTable\Support\TableFactory;
 use Dcodegroup\LaravelDsgTable\Tests\Fixtures\Tables\UsersTable;
 use Dcodegroup\LaravelDsgTable\Tests\TestCase;
+use Illuminate\Support\Facades\Route;
 
 class TableFactoryTest extends TestCase
 {
@@ -88,5 +89,16 @@ class TableFactoryTest extends TestCase
         $this->assertInstanceOf(UsersTable::class, DsgTable::get('users'));
         $this->assertCount(2, DsgTable::fields('users'));
         $this->assertCount(3, DsgTable::filters('users'));
+    }
+
+    public function test_actions_for_delegates_to_the_table_class(): void
+    {
+        Route::get('/admin/users/{user}', fn () => '')->name('admin.users.show');
+        Route::get('/admin/users/{user}/edit', fn () => '')->name('admin.users.edit');
+        Route::delete('/admin/users/{user}', fn () => '')->name('admin.users.destroy');
+
+        $model = (object) ['id' => 1];
+
+        $this->assertCount(3, DsgTable::actionsFor('users', $model));
     }
 }

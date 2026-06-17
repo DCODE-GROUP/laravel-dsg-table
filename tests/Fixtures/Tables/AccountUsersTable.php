@@ -32,4 +32,9 @@ class AccountUsersTable implements TableInterface
     {
         return [];
     }
+
+    public function actionsFor(mixed $model, mixed $param = null): array
+    {
+        return [];
+    }
 }

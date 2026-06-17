@@ -30,4 +30,11 @@ interface TableInterface
      * @return array<int, array<string, mixed>>
      */
     public function filters(Request $request, mixed $param = null): array;
+
+    /**
+     * Return DSG-compatible row action definitions for a single record.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function actionsFor(mixed $model, mixed $param = null): array;
 }

@@ -8,6 +8,7 @@ Instead of creating a dedicated API controller for every table, this package giv
 - **Table classes** that define authorisation, query logic, column definitions, and filters
 - **Column builders** that output the field arrays expected by `DsgTable`
 - **Reusable filter facets** (`BooleanFacet`, `DateRangeFacet`, `SelectFacet`, `RefineFacet`)
+- **Row action builders** (`CrudActions`, `RowActions`) configured on table classes
 - **Fluent `FilterBuilder`** for composing filter definitions
 - **`make:table`** to scaffold new tables quickly
 
@@ -68,6 +69,7 @@ This creates `app/Tables/UsersTable.php`:
 namespace App\Tables;
 
 use App\Models\User;
+use Dcodegroup\LaravelDsgTable\Actions\CrudActions;
 use Dcodegroup\LaravelDsgTable\Columns\ActionsColumn;
 use Dcodegroup\LaravelDsgTable\Columns\Column;
 use Dcodegroup\LaravelDsgTable\Columns\SlotColumn;
@@ -125,6 +127,40 @@ class UsersTable implements TableInterface
                 DateRangeFacet::make(__('generic.filters.creation_date'), 'created_at'),
             ]),
         );
+    }
+
+    public function actionsFor(mixed $model, mixed $param = null): array
+    {
+        return CrudActions::for($model, 'admin.users', $param)
+            ->withView(label: __('generic.buttons.view_details'))
+            ->withEdit()
+            ->withDelete(__('user.message.confirm_delete'))
+            ->toArray();
+    }
+}
+```
+
+Wire actions in your API resource with the `ResolvesDsgTableActions` trait:
+
+```php
+use Dcodegroup\LaravelDsgTable\Concerns\ResolvesDsgTableActions;
+
+class UserResource extends JsonResource
+{
+    use ResolvesDsgTableActions;
+
+    public function toArray($request): array
+    {
+        return [
+            'id' => $this->resource->id,
+            'full_name' => $this->resource->full_name,
+            'actions' => $this->dsgTableActions(),
+        ];
+    }
+
+    protected static function dsgTableName(): string
+    {
+        return 'users';
     }
 }
 ```
@@ -196,6 +232,7 @@ use Dcodegroup\LaravelDsgTable\Facades\DsgTable;
 $table = DsgTable::get('users');
 $fields = DsgTable::fields('users');
 $filters = DsgTable::filters('users');
+$actions = DsgTable::actionsFor('users', $user);
 $data = $table->resourceCollection();
 ```
 
@@ -209,6 +246,7 @@ Every table class must implement `TableInterface`:
 | `resourceCollection($param)` | Build and return the paginated `AnonymousResourceCollection` for the table rows. |
 | `fields()` | Return a `Collection` of column definition arrays for the table header. |
 | `filters($request, $param)` | Return DSG-compatible filter definitions for the frontend. |
+| `actionsFor($model, $param)` | Return DSG-compatible row action definitions for a single record. |
 
 When a request hits the data endpoint, the controller runs:
 
@@ -279,9 +317,19 @@ Set any value to `null` to omit `dataClass` from the column output.
     'active_label' => 'dsg-table::filters.active',
     'inactive_label' => 'dsg-table::filters.inactive',
 ],
+'actions' => [
+    'labels' => [
+        'view' => 'generic.buttons.view',
+        'edit' => 'generic.buttons.edit',
+        'delete' => 'generic.buttons.delete',
+    ],
+    'delete' => [
+        'component' => 'DeleteConfirmationButton',
+    ],
+],
 ```
 
-Override in your app config to use existing translation keys, e.g. `generic.words.active`.
+Override in your app config to use existing translation keys.
 
 Publish translations:
 
@@ -323,6 +371,75 @@ Facet::collection([DateRangeFacet::make('Created', 'created_at')]);
 use Dcodegroup\LaravelDsgTable\Support\ActiveFilter;
 
 ActiveFilter::items(); // Collection of [['name' => 'Active', 'value' => 1], ...]
+```
+
+## Row actions
+
+Define actions once on the table class via `actionsFor()`, then resolve them in your API resource.
+
+### CrudActions shorthand
+
+When routes follow `{prefix}.show`, `{prefix}.edit`, and `{prefix}.destroy`:
+
+```php
+public function actionsFor(mixed $model, mixed $param = null): array
+{
+    return CrudActions::for($model, 'admin.providers', $param)
+        ->withView()
+        ->withEdit()
+        ->withDelete(__('provider.message.confirm_delete'))
+        ->toArray();
+}
+```
+
+### RowActions for custom or nested routes
+
+```php
+use Dcodegroup\LaravelDsgTable\Actions\RowActions;
+use Illuminate\Support\Facades\Gate;
+
+public function actionsFor(mixed $model, mixed $param = null): array
+{
+    return RowActions::for($model, $param)
+        ->when(Gate::allows('view', $model), fn ($actions) => $actions
+            ->view('admin.providers.show'))
+        ->when(Gate::allows('update', $model), fn ($actions) => $actions
+            ->edit('admin.providers.contracts.edit', [
+                'provider' => $model->provider_id,
+                'contract' => $model,
+            ]))
+        ->when(Gate::allows('delete', $model), fn ($actions) => $actions
+            ->delete(
+                'admin.providers.contracts.destroy',
+                ['provider' => $model->provider_id, 'contract' => $model],
+                content: __('provider.contract.message.confirm_delete'),
+            ))
+        ->toArray();
+}
+```
+
+### Resource trait
+
+```php
+use Dcodegroup\LaravelDsgTable\Concerns\ResolvesDsgTableActions;
+
+class ProviderResource extends JsonResource
+{
+    use ResolvesDsgTableActions;
+
+    protected static function dsgTableName(): string
+    {
+        return 'providers';
+    }
+
+    public function toArray($request): array
+    {
+        return [
+            // ...
+            'actions' => $this->dsgTableActions(),
+        ];
+    }
+}
 ```
 
 ## Columns

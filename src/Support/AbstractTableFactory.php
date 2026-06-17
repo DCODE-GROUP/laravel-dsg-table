@@ -45,6 +45,14 @@ abstract class AbstractTableFactory
         return $this->get($tableName)->filters($request, $param);
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function actionsFor(string $tableName, mixed $model, mixed $param = null): array
+    {
+        return $this->get($tableName)->actionsFor($model, $param);
+    }
+
     protected function resolveClassName(string $tableName): string
     {
         return $this->tablesNamespace()
