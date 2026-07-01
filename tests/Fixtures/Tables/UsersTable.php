@@ -9,10 +9,10 @@ use Dcodegroup\LaravelDsgTable\Facets\BooleanFacet;
 use Dcodegroup\LaravelDsgTable\Facets\DateRangeFacet;
 use Dcodegroup\LaravelDsgTable\Facets\Facet;
 use Dcodegroup\LaravelDsgTable\Filters\FilterBuilder;
+use Dcodegroup\LaravelDsgTable\Tests\Fixtures\Resources\UsersTableResource;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
 
 class UsersTable implements TableInterface
@@ -32,9 +32,9 @@ class UsersTable implements TableInterface
     {
         self::$collectionParam = $param;
 
-        return JsonResource::collection(collect([
-            ['id' => 1, 'name' => 'Jane Doe'],
-            ['id' => 2, 'name' => 'John Smith'],
+        return UsersTableResource::collection(collect([
+            (object) ['id' => 1, 'name' => 'Jane Doe'],
+            (object) ['id' => 2, 'name' => 'John Smith'],
         ]));
     }
 

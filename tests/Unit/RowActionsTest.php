@@ -5,6 +5,7 @@ namespace Dcodegroup\LaravelDsgTable\Tests\Unit;
 use Dcodegroup\LaravelDsgTable\Actions\CrudActions;
 use Dcodegroup\LaravelDsgTable\Actions\RowActions;
 use Dcodegroup\LaravelDsgTable\Actions\TableAction;
+use Dcodegroup\LaravelDsgTable\Support\TableFactory;
 use Dcodegroup\LaravelDsgTable\Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 
@@ -92,7 +93,7 @@ class RowActionsTest extends TestCase
     {
         $model = (object) ['id' => 7];
 
-        $actions = app(\Dcodegroup\LaravelDsgTable\Support\TableFactory::class)
+        $actions = app(TableFactory::class)
             ->actionsFor('users', $model);
 
         $this->assertArrayHasKey('view', $actions);

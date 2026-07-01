@@ -2,6 +2,7 @@
 
 namespace Dcodegroup\LaravelDsgTable\Tests\Feature;
 
+use Dcodegroup\LaravelDsgTable\Facades\DsgTable;
 use Dcodegroup\LaravelDsgTable\Http\Controllers\TableFiltersController;
 use Dcodegroup\LaravelDsgTable\Tests\Fixtures\Tables\UsersTable;
 use Dcodegroup\LaravelDsgTable\Tests\TestCase;
@@ -49,6 +50,6 @@ class TableFiltersControllerTest extends TestCase
 
     public function test_facade_returns_filter_definitions(): void
     {
-        $this->assertCount(3, \Dcodegroup\LaravelDsgTable\Facades\DsgTable::filters('users'));
+        $this->assertCount(3, DsgTable::filters('users'));
     }
 }

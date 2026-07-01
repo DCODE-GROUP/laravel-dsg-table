@@ -2,7 +2,6 @@
 
 namespace Dcodegroup\LaravelDsgTable\Facades;
 
-use Dcodegroup\LaravelDsgTable\Contracts\TableInterface;
 use Dcodegroup\LaravelDsgTable\Support\AbstractTableFactory;
 use Illuminate\Support\Facades\Facade;
 

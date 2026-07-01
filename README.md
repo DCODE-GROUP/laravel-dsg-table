@@ -140,30 +140,22 @@ class UsersTable implements TableInterface
 }
 ```
 
-Wire actions in your API resource with the `ResolvesDsgTableActions` trait:
+Row actions are resolved automatically when data is returned through the table endpoint. Define `actionsFor()` on your table class; `TableController` wraps the resource collection in `DsgTableResourceCollection`, which injects an `actions` key on each row. Your API resource does not need to include actions:
 
 ```php
-use Dcodegroup\LaravelDsgTable\Concerns\ResolvesDsgTableActions;
-
 class UserResource extends JsonResource
 {
-    use ResolvesDsgTableActions;
-
     public function toArray($request): array
     {
         return [
             'id' => $this->resource->id,
             'full_name' => $this->resource->full_name,
-            'actions' => $this->dsgTableActions(),
         ];
-    }
-
-    protected static function dsgTableName(): string
-    {
-        return 'users';
     }
 }
 ```
+
+If a resource already includes an `actions` key, the collection will not override it.
 
 ### 3. Pass fields to your frontend
 
@@ -375,7 +367,7 @@ ActiveFilter::items(); // Collection of [['name' => 'Active', 'value' => 1], ...
 
 ## Row actions
 
-Define actions once on the table class via `actionsFor()`, then resolve them in your API resource.
+Define actions once on the table class via `actionsFor()`. When the table endpoint returns data, `DsgTableResourceCollection` resolves those actions for each row automatically.
 
 ### CrudActions shorthand
 
@@ -418,28 +410,14 @@ public function actionsFor(mixed $model, mixed $param = null): array
 }
 ```
 
-### Resource trait
+### Custom actions key
+
+By default, actions are added under the `actions` key. Pass a different key when wrapping manually:
 
 ```php
-use Dcodegroup\LaravelDsgTable\Concerns\ResolvesDsgTableActions;
+use Dcodegroup\LaravelDsgTable\Http\Resources\DsgTableResourceCollection;
 
-class ProviderResource extends JsonResource
-{
-    use ResolvesDsgTableActions;
-
-    protected static function dsgTableName(): string
-    {
-        return 'providers';
-    }
-
-    public function toArray($request): array
-    {
-        return [
-            // ...
-            'actions' => $this->dsgTableActions(),
-        ];
-    }
-}
+DsgTableResourceCollection::forTable($collection, $table, $param, actionsKey: 'row_actions');
 ```
 
 ## Columns
