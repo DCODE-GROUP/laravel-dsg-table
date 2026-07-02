@@ -3,7 +3,6 @@
 namespace Dcodegroup\LaravelDsgTable\Tests\Feature;
 
 use Dcodegroup\LaravelDsgTable\Http\Controllers\TableController;
-use Dcodegroup\LaravelDsgTable\Tests\Fixtures\Tables\AccountUsersTable;
 use Dcodegroup\LaravelDsgTable\Tests\Fixtures\Tables\UsersTable;
 use Dcodegroup\LaravelDsgTable\Tests\TestCase;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +17,10 @@ class TableControllerTest extends TestCase
         UsersTable::$collectionParam = null;
 
         Route::dsgTable(middleware: []);
+
+        Route::get('/admin/users/{user}', fn () => '')->name('admin.users.show');
+        Route::get('/admin/users/{user}/edit', fn () => '')->name('admin.users.edit');
+        Route::delete('/admin/users/{user}', fn () => '')->name('admin.users.destroy');
     }
 
     public function test_it_returns_table_data_for_a_registered_route(): void
@@ -27,7 +30,8 @@ class TableControllerTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.name', 'Jane Doe')
-            ->assertJsonPath('data.1.name', 'John Smith');
+            ->assertJsonPath('data.1.name', 'John Smith')
+            ->assertJsonPath('data.0.actions.view.link', route('admin.users.show', 1));
     }
 
     public function test_it_passes_optional_route_param_to_the_table(): void

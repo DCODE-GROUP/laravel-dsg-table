@@ -3,7 +3,7 @@
 namespace Dcodegroup\LaravelDsgTable\Tests;
 
 use Dcodegroup\LaravelDsgTable\DsgTableServiceProvider;
-use Illuminate\Foundation\Application;
+use Dcodegroup\LaravelDsgTable\Facades\DsgTable;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -18,7 +18,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageAliases($app): array
     {
         return [
-            'DsgTable' => \Dcodegroup\LaravelDsgTable\Facades\DsgTable::class,
+            'DsgTable' => DsgTable::class,
         ];
     }
 
